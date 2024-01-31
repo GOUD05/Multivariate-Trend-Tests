@@ -1,0 +1,81 @@
+---
+title: "Multivariate trend tests"
+author: "Dorsaf Goutali"
+date: '2024-01-30'
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The document is a technical guide for a code designed to calculate and compare the performance of four different tests used for detecting trends in multivariate data seriesfod different scenarios. These tests include (MOT/MDT) and (CET/CIT). 
+
+#run all function:Power evaluation_ trend tests_Margins,
+#Power evaluation_tests_Dependence_Margins,
+#Power evaluation_trend_Dependence,P-value,Statistique_tests,excel_setup
+```{r}
+excel_setup = function(Dir){
+  
+  setwd(Dir)
+  
+  # loader des packages necessaires:
+  RequiredPackages <- c("copula","Kendall","VGAM","gtools","openxlsx",
+                        "resample","openxlsx","foreach",
+                       "MASS")
+  
+  for (i in RequiredPackages) { 
+    if (!require(i, character.only = TRUE)) require(i)
+  }
+  
+  row_names = t(c("","MDT","MOT","CIT","CET"))
+  col_name = paste("% p.val < alpha",sep="")
+  
+  compare = createWorkbook()
+  addWorksheet(compare,sheetName="test_power")
+  
+  writeData(compare,sheet="test_power",x=row_names,colNames = FALSE,rowNames = FALSE)
+  writeData(compare,sheet="test_power",x=col_name,colNames = FALSE,rowNames = FALSE,startRow = 2)
+  
+  top_row_style = createStyle(border="bottom",borderStyle="thick",textDecoration = "bold")
+  addStyle(compare,"test_power",style=top_row_style,rows=1,cols=1:4)
+  addStyle(compare,"test_power",style=createStyle(textDecoration = "bold",),rows=2:50,cols=1)
+  
+  saveWorkbook(compare,file="COMPARE.xlsx",overwrite = TRUE)
+
+}
+excel_setup("directory")
+```
+
+
+# Example : No trend under_H0(tau:0.2, copula:clayton,n=30)
+
+```{r}
+Trend_tests(run_num = 1,copula = "clayton",coefs = rep(0.2,30),Nsim = 1000,Nbs = 1000,width = 10,alpha = 0.05)
+```
+
+## Trend in Dependence structure (copula:clayton,n=30)
+
+```{r}
+
+Trend_tests (run_num = 1,copula = "clayton",coefs =seq(0,1,length.out=30), Nsim = 1000, Nbs=1000, width = 10, alpha = 0.05) 
+```
+
+# Trend in one Margins(copula:galambos,tau:0.6,n=50,trend in one margin:0.3)
+
+```{r}
+Perfermance_tests_margins(run_num = 1,copula = "galambos",coefs = rep(0.2,50),Nsim = 1000,Nbs = 1000,width = 15,alpha = 0.05,location_param_x = 0.3,location_param_y = 0.3,trend_in_margin = "margin_1")
+```
+
+# Trend in both Margins(copula:galambos,tau:0.6,n=50,trend in both margins:0.3)
+```{r}
+Perfermance_tests_margins(run_num = 1,copula = "galambos",coefs = rep(0.2,50),Nsim = 1000,Nbs = 1000,width = 15,alpha = 0.05,location_param_x = 0.3,location_param_y = -0.1,trend_in_margin = "both")
+```
+#Trend in Dependence and in both Margins(copula:clayton,n=30,trend in both margins:-0.1)
+
+```{r}
+Power_tests_Dependence_Margins(run_num = 1,copula = "clayton",coefs = seq(0,1,length.out=30),Nsim = 1000,Nbs = 1000,width = 10,alpha = 0.05,location_param_x = -0.1,location_param_y = -0.1)
+```
+
